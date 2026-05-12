@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduCasino - Simulasi Sosiologi</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      :root {
+        --bg-dark: #0f172a;
+        --card-bg: #1e293b;
+        --gold: #fbbf24;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --text-light: #f8fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", Roboto, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      #warning-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .warning-content {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 20px;
+        max-width: 600px;
+        text-align: center;
+        border: 2px solid var(--danger);
+      }
+
+      nav {
+        background: #1e293b;
+        padding: 15px 5%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .balance-display {
+        background: #000;
+        padding: 8px 20px;
+        border-radius: 50px;
+        border: 2px solid var(--gold);
+        font-weight: bold;
+        color: var(--gold);
+        font-size: 1.2rem;
+      }
+
+      .container {
+        padding: 40px 5%;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .room {
+        display: none;
+        animation: fadeIn 0.5s;
+        text-align: center;
+      }
+      .room.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .lobby-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin: 30px 0;
+      }
+      .game-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 30px;
+        transition: 0.3s;
+        cursor: pointer;
+        border: 1px solid #334155;
+      }
+      .game-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--gold);
+      }
+      .game-card i {
+        font-size: 3rem;
+        color: var(--gold);
+        margin-bottom: 15px;
+      }
+
+      .status-msg {
+        margin: 20px auto;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: bold;
+        min-height: 55px;
+        max-width: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .msg-win {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+        border: 1px solid var(--success);
+      }
+      .msg-loss {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+      }
+      .msg-draw {
+        background: rgba(251, 191, 36, 0.2);
+        color: var(--gold);
+        border: 1px solid var(--gold);
+      }
+
+      button {
+        cursor: pointer;
+        transition: 0.3s;
+        border: none;
+        font-weight: bold;
+      }
+      .btn-play {
+        background: var(--gold);
+        padding: 10px 20px;
+        border-radius: 8px;
+        color: #000;
+      }
+      .btn-confirm {
+        background: var(--danger);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+      }
+      .back-btn {
+        background: #475569;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .slot-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .reel {
+        width: 100px;
+        height: 120px;
+        background: #000;
+        border: 4px solid var(--gold);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+      }
+      .spinning {
+        animation: spin 0.1s infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: translateY(-5px);
+        }
+        100% {
+          transform: translateY(5px);
+        }
+      }
+
+      .table-area {
+        background: #065f46;
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px 0;
+        border: 5px solid #047857;
+      }
+      .cards-row {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        min-height: 110px;
+        margin: 10px 0;
+      }
+      .bj-card {
+        background: white;
+        color: black;
+        width: 70px;
+        height: 100px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .mines-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        gap: 10px;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      .mine-tile {
+        width: 100px;
+        height: 100px;
+        background: #334155;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        cursor: pointer;
+      }
+
+      .cups-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin: 80px 0 40px 0;
+      }
+      .cup-item {
+        position: relative;
+        width: 100px;
+        cursor: pointer;
+      }
+      .cup-img {
+        width: 100px;
+        height: 120px;
+        background: #991b1b;
+        border-radius: 50% 50% 10% 10%;
+        position: relative;
+        z-index: 2;
+        transition: 0.5s;
+      }
+      .cup-item.lift .cup-img {
+        transform: translateY(-80px);
+      }
+      .ball {
+        width: 30px;
+        height: 30px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 10px;
+        left: 35px;
+        z-index: 1;
+        display: none;
+      }
+      .cup-item.win .ball {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="warning-overlay">
+      <div class="warning-content">
+        <h1>⚠️ SIMULASI TUGAS SOSIOLOGI</h1>
+        <p>
+          Eksperimen perilaku sosial: Dampak struktural perjudian terhadap
+          individu.
+        </p>
+        <button
+          class="btn-confirm"
+          onclick="
+            document.getElementById('warning-overlay').style.display = 'none'
+          "
+        >
+          MULAI SIMULASI
+        </button>
+      </div>
+    </div>
+
+    <nav>
+      <div style="font-weight: bold; font-size: 1.4rem">
+        EduCasin<span style="color: var(--gold)">o</span>
+      </div>
+      <div class="balance-display">Rp <span id="balance">150,000</span></div>
+    </nav>
+
+    <div class="container" id="main-content">
+      <!-- ROOM: LOBBY -->
+      <div id="room-lobby" class="room active">
+        <h1>Pilih Permainan</h1>
+        <div class="lobby-grid">
+          <div class="game-card" onclick="enterRoom('slot')">
+            <i class="fa-solid fa-slot-machine"></i>
+            <h3>777 Jackpot</h3>
+            <p>Taruhan: Rp 10rb</p>
+            <button class="btn-play">MAIN</button>
+          </div>
+          <div class="game-card" onclick="enterRoom('bj')">
+            <i class="fa-solid fa-spade"></i>
+            <h3>Blackjack</h3>
+            <p>Taruhan: Rp 20rb</p>
+            <button class="btn-play">MAIN</button>
+          </div>
+          <div class="game-card" onclick="enterRoom('mines')">
+            <i class="fa-solid fa-land-mine-on"></i>
+            <h3>Ladang Bom</h3>
+            <p>Taruhan: Rp 25rb</p>
+            <button class="btn-play">MAIN</button>
+          </div>
+          <div class="game-card" onclick="enterRoom('cups')">
+            <i class="fa-solid fa-whiskey-glass"></i>
+            <h3>Tebak Cangkir</h3>
+            <p>Taruhan: Rp 5rb</p>
+            <button class="btn-play">MAIN</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROOM: SLOT -->
+      <div id="room-slot" class="room">
+        <button class="back-btn" onclick="goToLobby()">← Kembali</button>
+        <h2>777 Jackpot</h2>
+        <div id="slot-status" class="status-msg">Silakan tekan Spin</div>
+        <div class="slot-container">
+          <div id="r1" class="reel">❓</div>
+          <div id="r2" class="reel">❓</div>
+          <div id="r3" class="reel">❓</div>
+        </div>
+        <button
+          class="btn-confirm"
+          id="slot-btn"
+          onclick="spinSlot()"
+          style="background: var(--gold); color: black"
+        >
+          SPIN (Rp 10.000)
+        </button>
+      </div>
+
+      <!-- ROOM: BLACKJACK -->
+      <div id="room-bj" class="room">
+        <button class="back-btn" onclick="goToLobby()">← Kembali</button>
+        <h2>Blackjack 21</h2>
+        <div id="bj-status" class="status-msg">Klik Deal untuk mulai</div>
+        <div class="table-area">
+          <p>Kartu Bandar:</p>
+          <div class="cards-row" id="dealer-cards"></div>
+          <hr style="opacity: 0.2" />
+          <p>Kartu Anda (Skor: <span id="bj-score">0</span>):</p>
+          <div class="cards-row" id="player-cards"></div>
+        </div>
+        <button
+          class="btn-confirm"
+          id="bj-start"
+          onclick="startBJ()"
+          style="background: var(--gold); color: black"
+        >
+          DEAL (Rp 20.000)
+        </button>
+        <button
+          class="btn-confirm"
+          id="bj-hit"
+          onclick="hitBJ()"
+          style="display: none"
+        >
+          HIT
+        </button>
+        <button
+          class="btn-confirm"
+          id="bj-stay"
+          onclick="stayBJ()"
+          style="display: none; background: #475569"
+        >
+          STAY
+        </button>
+      </div>
+
+      <!-- ROOM: MINES -->
+      <div id="room-mines" class="room">
+        <button class="back-btn" onclick="goToLobby()">← Kembali</button>
+        <h2>Ladang Bom</h2>
+        <div id="mines-status" class="status-msg">
+          Cari 4 Diamond! Hindari Bom.
+        </div>
+        <div class="mines-grid" id="mines-board"></div>
+        <button
+          class="btn-confirm"
+          id="mines-start"
+          onclick="initMines()"
+          style="background: var(--gold); color: black"
+        >
+          MULAI (Rp 25.000)
+        </button>
+      </div>
+
+      <!-- ROOM: CUPS -->
+      <div id="room-cups" class="room">
+        <button class="back-btn" onclick="goToLobby()">← Kembali</button>
+        <h2>Tebak Cangkir</h2>
+        <div id="cups-status" class="status-msg">Pilih satu cangkir!</div>
+        <div class="cups-wrapper">
+          <div class="cup-item" id="cup-0" onclick="handleCup(0)">
+            <div class="cup-img"></div>
+            <div class="ball"></div>
+          </div>
+          <div class="cup-item" id="cup-1" onclick="handleCup(1)">
+            <div class="cup-img"></div>
+            <div class="ball"></div>
+          </div>
+          <div class="cup-item" id="cup-2" onclick="handleCup(2)">
+            <div class="cup-img"></div>
+            <div class="ball"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let balance = 150000;
+      let gameActive = true;
+      const symbols = ["🍒", "🍋", "🔔", "💎", "7️⃣"];
+
+      function showMsg(id, text, type) {
+        const el = document.getElementById(id);
+        el.innerText = text;
+        el.className =
+          "status-msg " +
+          (type === "win"
+            ? "msg-win"
+            : type === "draw"
+              ? "msg-draw"
+              : "msg-loss");
+      }
+
+      function updateUI() {
+        document.getElementById("balance").innerText = balance.toLocaleString();
+      }
+
+      function checkBankruptcy() {
+        if (balance <= 0) {
+          setTimeout(() => {
+            renderGameOver();
+          }, 1500);
+        }
+      }
+
+      function renderGameOver() {
+        document.getElementById("main-content").innerHTML = `
+                <div style="animation: fadeIn 1s; margin-top: 20px;">
+                    <div style="background:var(--danger); padding:40px; border-radius:20px; text-align:center; border: 4px solid white;">
+                        <h1 style="font-size:3rem; margin:0;">🚫 ANDA BANGKRUT!</h1>
+                        <p style="font-size:1.5rem; font-weight:bold;">Saldo Rp 0. Makanya jangan judi!</p>
+                        <button class="btn-confirm" onclick="location.reload()" style="background:white; color:black; margin-top:20px;">COBA LAGI</button>
+                    </div>
+
+                    <div style="margin-top: 40px; padding: 40px; background: var(--card-bg); border-left: 10px solid var(--gold); border-radius: 15px; text-align: left;">
+                        <h2 style="color: var(--gold); font-size: 2rem;"><i class="fa-solid fa-scale-balanced"></i> Analisis Sosiologi: Mengapa Anda Kalah?</h2>
+                        <p style="font-size: 1.1rem; line-height: 1.8;">
+                            Kebangkrutan yang baru saja Anda alami adalah cerminan dari <strong>Eksploitasi Struktural</strong> dalam masyarakat. Perjudian bukanlah permainan peluang, melainkan sistem yang dirancang untuk memindahkan kekayaan dari individu ke pemilik modal (Bandar).
+                        </p>
+                        <ul style="line-height: 2; font-size: 1.1rem;">
+                            <li><strong>Ketidakadilan Matematis:</strong> Bandar memiliki <em>House Edge</em>. Secara sosiologis, ini adalah bentuk ketimpangan kekuasaan di mana pemain tidak akan pernah menang dalam jangka panjang.</li>
+                            <li><strong>Diferensiasi Sosial:</strong> Judi menciptakan kelas sosial yang terjerat kemiskinan struktural, sementara penyedia layanan mendapatkan keuntungan dari kerugian masyarakat luas.</li>
+                            <li><strong>Manipulasi Psikologis:</strong> Kemenangan kecil (umpan) dirancang untuk memicu dopamin, membuat Anda terus bermain hingga aset habis (seperti yang terjadi sekarang).</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+      }
+
+      function enterRoom(roomId) {
+        document
+          .querySelectorAll(".room")
+          .forEach((r) => r.classList.remove("active"));
+        document.getElementById("room-" + roomId).classList.add("active");
+      }
+
+      function goToLobby() {
+        enterRoom("lobby");
+      }
+
+      // --- SLOT LOGIC ---
+      function spinSlot() {
+        if (balance < 10000) return;
+        balance -= 10000;
+        updateUI();
+        const btn = document.getElementById("slot-btn");
+        btn.disabled = true;
+        const reels = [
+          document.getElementById("r1"),
+          document.getElementById("r2"),
+          document.getElementById("r3"),
+        ];
+        reels.forEach((r) => {
+          r.classList.add("spinning");
+          r.innerText = "❓";
+        });
+        showMsg("slot-status", "Berputar...", "draw");
+
+        setTimeout(() => {
+          const res = reels.map(
+            () => symbols[Math.floor(Math.random() * symbols.length)],
+          );
+          reels.forEach((r, i) => {
+            r.classList.remove("spinning");
+            r.innerText = res[i];
+          });
+          if (res[0] === res[1] && res[1] === res[2]) {
+            balance += 100000;
+            showMsg("slot-status", "JACKPOT! +Rp 100.000", "win");
+          } else {
+            showMsg("slot-status", "Zonk! Coba lagi.", "loss");
+          }
+          btn.disabled = false;
+          updateUI();
+          checkBankruptcy();
+        }, 1000);
+      }
+
+      // --- BLACKJACK LOGIC (FIXED 1-9) ---
+      let pScore = 0;
+      function startBJ() {
+        if (balance < 20000) return;
+        balance -= 20000;
+        updateUI();
+        pScore = Math.floor(Math.random() * 9) + 1;
+        document.getElementById("player-cards").innerHTML =
+          `<div class="bj-card">${pScore}</div>`;
+        document.getElementById("dealer-cards").innerHTML =
+          `<div class="bj-card">?</div>`;
+        document.getElementById("bj-score").innerText = pScore;
+        document.getElementById("bj-start").style.display = "none";
+        document.getElementById("bj-hit").style.display = "inline-block";
+        document.getElementById("bj-stay").style.display = "inline-block";
+        showMsg("bj-status", "Ambil kartu atau Stay?", "draw");
+      }
+      function hitBJ() {
+        let n = Math.floor(Math.random() * 9) + 1;
+        pScore += n;
+        document.getElementById("player-cards").innerHTML +=
+          `<div class="bj-card">${n}</div>`;
+        document.getElementById("bj-score").innerText = pScore;
+        if (pScore > 21) {
+          showMsg(
+            "bj-status",
+            "BUST! Total " + pScore + ". Anda kalah.",
+            "loss",
+          );
+          document.getElementById("bj-start").style.display = "inline-block";
+          document.getElementById("bj-hit").style.display = "none";
+          document.getElementById("bj-stay").style.display = "none";
+          updateUI();
+          checkBankruptcy();
+        }
+      }
+      function stayBJ() {
+        let d = Math.floor(Math.random() * 5) + 17;
+        document.getElementById("dealer-cards").innerHTML =
+          `<div class="bj-card">${d}</div>`;
+        if (d > 21 || pScore > d) {
+          balance += 40000;
+          showMsg("bj-status", "MENANG! Bandar: " + d, "win");
+        } else if (pScore === d) {
+          balance += 20000;
+          showMsg("bj-status", "SERI! Bandar: " + d, "draw");
+        } else {
+          showMsg("bj-status", "KALAH! Bandar: " + d, "loss");
+        }
+        document.getElementById("bj-start").style.display = "inline-block";
+        document.getElementById("bj-hit").style.display = "none";
+        document.getElementById("bj-stay").style.display = "none";
+        updateUI();
+        checkBankruptcy();
+      }
+
+      // --- MINES LOGIC ---
+      let mCount = 0;
+      let mData = [];
+      function initMines() {
+        if (balance < 25000) return;
+        balance -= 25000;
+        updateUI();
+        mCount = 0;
+        mData = Array(9).fill("💎");
+        let b = 0;
+        while (b < 3) {
+          let i = Math.floor(Math.random() * 9);
+          if (mData[i] !== "💣") {
+            mData[i] = "💣";
+            b++;
+          }
+        }
+        const board = document.getElementById("mines-board");
+        board.innerHTML = "";
+        for (let i = 0; i < 9; i++) {
+          let t = document.createElement("div");
+          t.className = "mine-tile";
+          t.id = `tile-${i}`;
+          t.onclick = () => {
+            if (t.innerHTML !== "") return;
+            if (mData[i] === "💣") {
+              showMsg("mines-status", "BOOM! Anda kena ranjau.", "loss");
+              revealMines();
+            } else {
+              t.innerHTML =
+                '<i class="fa-solid fa-gem" style="color:#60a5fa"></i>';
+              mCount++;
+              if (mCount === 4) {
+                balance += 100000;
+                showMsg("mines-status", "HEBAT! +Rp 100.000", "win");
+                revealMines();
+              }
+            }
+          };
+          board.appendChild(t);
+        }
+        document.getElementById("mines-start").disabled = true;
+        showMsg("mines-status", "Klik kotak!", "draw");
+      }
+      function revealMines() {
+        mData.forEach((v, i) => {
+          let t = document.getElementById(`tile-${i}`);
+          t.innerHTML =
+            v === "💣"
+              ? '<i class="fa-solid fa-bomb" style="color:var(--danger)"></i>'
+              : '<i class="fa-solid fa-gem" style="color:#60a5fa"></i>';
+          t.onclick = null;
+        });
+        document.getElementById("mines-start").disabled = false;
+        updateUI();
+        checkBankruptcy();
+      }
+
+      // --- CUPS LOGIC ---
+      function handleCup(idx) {
+        if (!gameActive || balance < 5000) return;
+        gameActive = false;
+        balance -= 5000;
+        updateUI();
+        const win = Math.floor(Math.random() * 3);
+        const cups = document.querySelectorAll(".cup-item");
+        cups.forEach((c) => c.classList.remove("win", "lift"));
+        cups[win].classList.add("win");
+        cups[idx].classList.add("lift");
+
+        setTimeout(() => {
+          if (idx === win) {
+            balance += 15000;
+            showMsg("cups-status", "TEBAKAN BENAR! +Rp 15.000", "win");
+          } else {
+            cups[win].classList.add("lift");
+            showMsg("cups-status", "SALAH! Bandar menang.", "loss");
+          }
+          updateUI();
+          setTimeout(() => {
+            cups.forEach((c) => c.classList.remove("lift"));
+            gameActive = true;
+            showMsg("cups-status", "Diacak lagi...", "draw");
+            checkBankruptcy();
+          }, 1500);
+        }, 500);
+      }
+    </script>
+  </body>
+</html>
